@@ -1,5 +1,6 @@
 using System.Text;
 using DotNetBasicAPI.Auth;
+using DotNetBasicAPI.Middleware;
 using DotNetBasicAPI.Models;
 using DotNetBasicAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,6 +40,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

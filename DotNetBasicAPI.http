@@ -1,6 +1,94 @@
-@DotNetBasicAPI_HostAddress = http://localhost:5095
+@baseUrl = http://localhost:5095
 
-GET {{DotNetBasicAPI_HostAddress}}/weatherforecast/
-Accept: application/json
+# Documentación interactiva (solo en Development):
+#   OpenAPI JSON: {{baseUrl}}/openapi/v1.json
+#   Scalar UI:    {{baseUrl}}/scalar/v1
 
-###
+### Register -> 201
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Alice",
+  "email": "alice@example.com",
+  "password": "supersecret"
+}
+
+### Login -> 200 (copiá el token en la variable @token de abajo)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "supersecret"
+}
+
+### Login con password incorrecto -> 401
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "wrong"
+}
+
+@token = pegar-aqui-el-token-del-login
+
+### Get all users (público) -> 200, sin passwordHash
+GET {{baseUrl}}/api/users
+
+### Get user by ID (público)
+GET {{baseUrl}}/api/users/1
+
+### Create a user SIN token -> 401
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Bob",
+  "email": "bob@example.com"
+}
+
+### Create a user CON token -> 201
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Bob",
+  "email": "bob@example.com"
+}
+
+### Update a user CON token -> 204
+PUT {{baseUrl}}/api/users/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Alice Updated",
+  "email": "alice.updated@example.com"
+}
+
+### Delete a user CON token -> 204
+DELETE {{baseUrl}}/api/users/1
+Authorization: Bearer {{token}}
+
+### Create a user — invalid (empty name), con token -> 400
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "",
+  "email": "alice@example.com"
+}
+
+### Create a user — invalid (bad email), con token -> 400
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Alice",
+  "email": "noesmail"
+}

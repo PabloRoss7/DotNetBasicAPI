@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="DotNetBasicAPI.Tests/DotNetBasicAPI.Tests.csproj" />
   <Project Path="DotNetBasicAPI/DotNetBasicAPI.csproj" />
 </Solution>

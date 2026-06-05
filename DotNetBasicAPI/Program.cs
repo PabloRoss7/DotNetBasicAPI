@@ -40,6 +40,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// Límites configurables (sección RateLimiting); defaults 10 req / 10 s por IP.
+var permitLimit = builder.Configuration.GetValue("RateLimiting:PermitLimit", 10);
+var windowSeconds = builder.Configuration.GetValue("RateLimiting:WindowSeconds", 10);
+
 builder.Services.AddRateLimiter(options =>
 {
     // Al superar el límite, responder 429 (por defecto sería 503).
@@ -51,14 +55,14 @@ builder.Services.AddRateLimiter(options =>
         // La clave del cupo es la IP del cliente. Esto corre en cada request.
         string clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-        // El contador para esa IP: ventana fija de 10 requests cada 10 segundos.
+        // El contador para esa IP: ventana fija configurable.
         // La factory corre una vez por IP nueva; el framework reutiliza el contador.
         return RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: clientIp,
             factory: key => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
-                Window = TimeSpan.FromSeconds(10)
+                PermitLimit = permitLimit,
+                Window = TimeSpan.FromSeconds(windowSeconds)
             });
     });
 });
@@ -80,3 +84,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Expuesta para que WebApplicationFactory<Program> pueda referenciarla desde los tests.
+public partial class Program { }

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using DotNetBasicAPI.Auth;
 using DotNetBasicAPI.Middleware;
 using DotNetBasicAPI.Models;
@@ -39,9 +40,33 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddRateLimiter(options =>
+{
+    // Al superar el límite, responder 429 (por defecto sería 503).
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Límite global: para cada request se decide a qué cupo (partición) pertenece.
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        // La clave del cupo es la IP del cliente. Esto corre en cada request.
+        string clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        // El contador para esa IP: ventana fija de 10 requests cada 10 segundos.
+        // La factory corre una vez por IP nueva; el framework reutiliza el contador.
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: clientIp,
+            factory: key => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromSeconds(10)
+            });
+    });
+});
+
 var app = builder.Build();
 
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {

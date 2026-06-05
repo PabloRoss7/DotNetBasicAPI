@@ -31,6 +31,9 @@ public class UsersController : ControllerBase
     [HttpPost]
     public IActionResult Create(CreateUserRequest req)
     {
+        if (_users.GetByEmail(req.Email) is not null)
+            return Conflict(new { message = "El email ya está en uso." });
+
         var user = new User
         {
             Name = req.Name,
@@ -46,6 +49,11 @@ public class UsersController : ControllerBase
     {
         var user = _users.GetById(id);
         if (user is null) return NotFound();
+
+        // El email puede repetir el propio; solo choca si pertenece a OTRO usuario.
+        var existing = _users.GetByEmail(req.Email);
+        if (existing is not null && existing.Id != id)
+            return Conflict(new { message = "El email ya está en uso." });
 
         user.Name = req.Name;
         user.Email = req.Email;

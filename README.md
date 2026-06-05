@@ -13,7 +13,96 @@ A RESTful API built with ASP.NET Core for managing users. The project was create
 * JWT-based authentication and authorization
 * Rate limiting to protect the API from excessive requests
 * Custom middleware for request logging and request processing
-* Interactive API documentation with Swagger/OpenAPI
+* Interactive API documentation with OpenAPI (Scalar UI)
+
+## Tech Stack
+
+* .NET 10 / ASP.NET Core (Minimal Hosting Model, Controllers)
+* OpenAPI via `Microsoft.AspNetCore.OpenApi`, rendered with Scalar
+* JWT authentication (`Microsoft.AspNetCore.Authentication.JwtBearer`)
+
+## Getting Started
+
+### Prerequisites
+
+* [.NET 10 SDK](https://dotnet.microsoft.com/download)
+
+### Run
+
+From the `DotNetBasicAPI/` directory:
+
+```bash
+dotnet run --launch-profile http
+```
+
+The API listens on `http://localhost:5095`.
+
+* Interactive docs (Scalar UI): `http://localhost:5095/scalar/v1`
+* OpenAPI document: `http://localhost:5095/openapi/v1.json`
+
+> Docs endpoints are only mapped in the Development environment.
+
+### Configuration
+
+JWT settings live under the `Jwt` section of `appsettings.json` (issuer, audience, signing key, expiry). The signing key shipped in the repo is for development only — in a real deployment it should come from user-secrets or environment variables, never committed.
+
+## Endpoints
+
+| Method | Route | Auth | Description |
+| --- | --- | --- | --- |
+| POST | `/api/auth/register` | Public | Register a new user (name, email, password) |
+| POST | `/api/auth/login` | Public | Log in and receive a JWT |
+| GET | `/api/users` | Public | List all users |
+| GET | `/api/users/{id}` | Public | Get a user by id |
+| POST | `/api/users` | Bearer | Create a user |
+| PUT | `/api/users/{id}` | Bearer | Update a user |
+| DELETE | `/api/users/{id}` | Bearer | Delete a user |
+
+All endpoints are globally rate limited to 10 requests per 10 seconds per client IP; exceeding the limit returns `429 Too Many Requests`. User data is stored in memory, so it resets on restart.
+
+### Design note: two paths to create a user
+
+Users can be created in two ways: through `POST /api/auth/register` (public sign-up, which sets a password) and through `POST /api/users` (the CRUD create endpoint, which manages name/email only). This overlap is intentional: the project is built for the **"Desarrollo back-end con .NET" (Coursera)** course, whose requirements include exposing full CRUD operations over the `Users` resource. The registration endpoint is what authentication needs, while the CRUD `Create` is kept to satisfy that requirement, so both coexist by design rather than by oversight.
+
+## Authentication flow
+
+Write endpoints require a JWT in the `Authorization` header. To obtain one:
+
+1. **Register** a user:
+
+   ```http
+   POST /api/auth/register
+   Content-Type: application/json
+
+   { "name": "Alice", "email": "alice@example.com", "password": "supersecret" }
+   ```
+
+2. **Log in** to get a token:
+
+   ```http
+   POST /api/auth/login
+   Content-Type: application/json
+
+   { "email": "alice@example.com", "password": "supersecret" }
+   ```
+
+   Response:
+
+   ```json
+   { "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "expiresAtUtc": "..." }
+   ```
+
+3. **Call a protected endpoint** with the token:
+
+   ```http
+   POST /api/users
+   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   Content-Type: application/json
+
+   { "name": "Bob", "email": "bob@example.com" }
+   ```
+
+You can also paste the token into the Scalar UI to try protected endpoints from the browser. The `DotNetBasicAPI.http` file contains ready-to-run requests for the full flow.
 
 ## Concepts Practiced
 
@@ -26,7 +115,7 @@ A RESTful API built with ASP.NET Core for managing users. The project was create
 * Request validation
 * HTTP status codes and error handling
 * Rate limiting
-* OpenAPI / Swagger documentation
+* OpenAPI documentation
 
 ## Goal
 

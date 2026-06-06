@@ -1,6 +1,6 @@
 # User Management API
 
-A RESTful API built with ASP.NET Core for managing users. The project was created to practice common backend development concepts used in modern web applications.
+A RESTful API built with ASP.NET Core for managing users. It was built as the final project for the **"Desarrollo back-end con .NET" (Coursera)** course, to practice common backend development concepts used in modern web applications.
 
 ## Features
 
@@ -11,9 +11,12 @@ A RESTful API built with ASP.NET Core for managing users. The project was create
   * Delete users
 * Input validation using Data Annotations and model validation
 * JWT-based authentication and authorization
+* Secure password hashing for stored credentials
 * Rate limiting to protect the API from excessive requests
 * Custom middleware for request logging and request processing
 * Interactive API documentation with OpenAPI (Scalar UI)
+* Unit and integration test suite (xUnit)
+* Containerized for deployment (Docker)
 
 ## Tech Stack
 
@@ -95,7 +98,9 @@ The container listens on port `8080`. In both cases the JWT key comes from the e
 | PUT | `/api/users/{id}` | Bearer | Update a user |
 | DELETE | `/api/users/{id}` | Bearer | Delete a user |
 
-All endpoints are globally rate limited to 10 requests per 10 seconds per client IP; exceeding the limit returns `429 Too Many Requests`. User data is stored in memory, so it resets on restart.
+In development, all endpoints are globally rate limited to 10 requests per 10 seconds per client IP; exceeding the limit returns `429 Too Many Requests`. In production the limit is 100 requests per 60 seconds.
+
+User data is stored in memory, so it resets on restart — persistence with a database is planned for a later course.
 
 ### Design note: two paths to create a user
 
@@ -149,10 +154,16 @@ You can also paste the token into the Scalar UI to try protected endpoints from 
 * Dependency Injection
 * Middleware pipeline
 * Authentication and Authorization with JWT
+* Password hashing
 * Request validation
 * HTTP status codes and error handling
 * Rate limiting
 * OpenAPI documentation
+* Configuration and the Options pattern
+* Environment-based configuration (Development / Production)
+* Secret management (user-secrets, environment variables)
+* Unit and integration testing (xUnit, WebApplicationFactory)
+* Containerization with Docker
 
 ## Goal
 

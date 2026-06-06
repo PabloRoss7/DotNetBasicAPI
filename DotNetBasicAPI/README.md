@@ -61,6 +61,28 @@ JWT settings live under the `Jwt` section (`Issuer`, `Audience`, `ExpiryMinutes`
 
 Configuration is layered: `appsettings.json` → `appsettings.{Environment}.json` → user-secrets (dev) → environment variables. Later sources override earlier ones.
 
+### Running in production mode (locally)
+
+In production the app runs the published DLL (not `dotnet run`), with `ASPNETCORE_ENVIRONMENT=Production` and the signing key injected as an environment variable. `appsettings.Production.json` applies (quieter logging, higher rate limit) and the docs endpoints are not mapped.
+
+**Option A — published DLL** (run from the solution root):
+
+```powershell
+dotnet publish DotNetBasicAPI/DotNetBasicAPI.csproj -c Release -o publish
+$env:ASPNETCORE_ENVIRONMENT = "Production"
+$env:Jwt__Key = "any-long-production-key-at-least-32-characters"
+dotnet publish/DotNetBasicAPI.dll
+```
+
+**Option B — Docker** (requires Docker installed; build from the solution root):
+
+```bash
+docker build -t usermgmt-api .
+docker run -p 8080:8080 -e Jwt__Key="any-long-production-key-at-least-32-characters" usermgmt-api
+```
+
+The container listens on port `8080`. In both cases the JWT key comes from the environment, never from a file in the repo.
+
 ## Endpoints
 
 | Method | Route | Auth | Description |

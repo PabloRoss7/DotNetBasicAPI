@@ -1,6 +1,7 @@
 # Build output (all projects)
 [Bb]in/
 [Oo]bj/
+[Pp]ublish/
 
 # Visual Studio / Rider
 .vs/

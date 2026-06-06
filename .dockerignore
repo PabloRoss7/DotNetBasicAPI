@@ -1,0 +1,15 @@
+# Build output
+**/bin/
+**/obj/
+
+# Git
+.git/
+.gitignore
+
+# Tests are not needed in the runtime image
+DotNetBasicAPI.Tests/
+
+# Docs / misc
+*.md
+**/.vs/
+**/.idea/

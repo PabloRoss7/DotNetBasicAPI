@@ -86,4 +86,5 @@ app.MapControllers();
 app.Run();
 
 // Expuesta para que WebApplicationFactory<Program> pueda referenciarla desde los tests.
-public partial class Program { }
+// public partial class Program { }
+// En .NET 10 ya no es necesaria esta linea. Ahora Program es accesible para los tests sin necesidad de definir el partial para que sea public.

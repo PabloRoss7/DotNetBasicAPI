@@ -27,12 +27,22 @@ A RESTful API built with ASP.NET Core for managing users. The project was create
 
 * [.NET 10 SDK](https://dotnet.microsoft.com/download)
 
-### Run
+### First-time setup (development)
 
-From the `DotNetBasicAPI/` directory:
+The JWT signing key is **not** stored in the repo. Set it once via user-secrets:
 
 ```bash
-dotnet run --launch-profile http
+dotnet user-secrets set "Jwt:Key" "any-long-dev-key-at-least-32-characters" --project DotNetBasicAPI
+```
+
+Without this, the app can't sign tokens and login will fail.
+
+### Run
+
+From the solution root (`UserManagementApi/`):
+
+```bash
+dotnet run --project DotNetBasicAPI --launch-profile http
 ```
 
 The API listens on `http://localhost:5095`.
@@ -44,7 +54,12 @@ The API listens on `http://localhost:5095`.
 
 ### Configuration
 
-JWT settings live under the `Jwt` section of `appsettings.json` (issuer, audience, signing key, expiry). The signing key shipped in the repo is for development only — in a real deployment it should come from user-secrets or environment variables, never committed.
+JWT settings live under the `Jwt` section (`Issuer`, `Audience`, `ExpiryMinutes` in `appsettings.json`). The **signing key is a secret and is never committed**:
+
+* **Development** → `dotnet user-secrets` (see setup above).
+* **Production** → an environment variable `Jwt__Key` (double underscore maps to `Jwt:Key`).
+
+Configuration is layered: `appsettings.json` → `appsettings.{Environment}.json` → user-secrets (dev) → environment variables. Later sources override earlier ones.
 
 ## Endpoints
 

@@ -19,5 +19,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.UseSetting("RateLimiting:PermitLimit", _permitLimit.ToString());
         builder.UseSetting("RateLimiting:WindowSeconds", "10");
+
+        // La clave JWT ya no vive en appsettings.json (está en user-secrets / env var).
+        // Los tests la proveen acá para no depender del entorno de cada máquina.
+        builder.UseSetting("Jwt:Key", "test-signing-key-which-is-definitely-long-enough-1234567890");
     }
 }
